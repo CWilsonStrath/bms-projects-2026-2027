@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEBM Critical Appraisal Tool</title>
+    <title>Critical Appraisal Tool for In Vitro Studies</title>
     <style>
         * {
             margin: 0;
@@ -41,7 +41,7 @@
         }
 
         .container {
-            max-width: 1800px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 0 16px;
         }
@@ -67,7 +67,7 @@
 
         .add-study-form {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
             gap: 16px;
             align-items: end;
         }
@@ -84,7 +84,7 @@
             font-size: 14px;
         }
 
-        .input-group input {
+        .input-group input, .input-group select, .input-group textarea {
             padding: 12px;
             border: 1px solid var(--md-sys-color-outline);
             border-radius: 4px;
@@ -93,7 +93,7 @@
             color: var(--md-sys-color-on-surface);
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: var(--md-sys-color-primary);
             border-width: 2px;
@@ -141,7 +141,7 @@
             margin-top: 16px;
         }
 
-        .evaluation-table-container {
+        .studies-table-container {
             background: white;
             border-radius: 12px;
             box-shadow: var(--md-elevation-1);
@@ -149,79 +149,104 @@
             overflow-x: auto;
         }
 
-        .evaluation-table {
+        .studies-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1200px;
         }
 
-        .evaluation-table thead {
+        .studies-table thead {
             background: var(--md-sys-color-primary);
             color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .evaluation-table th {
-            padding: 12px 8px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 13px;
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .evaluation-table th:first-child {
+        .studies-table th {
+            padding: 16px 12px;
             text-align: left;
-            padding-left: 16px;
+            font-weight: 500;
+            font-size: 14px;
         }
 
-        .evaluation-table th:last-child {
-            border-right: none;
-        }
-
-        .evaluation-table td {
-            padding: 8px;
-            text-align: center;
+        .studies-table td {
+            padding: 12px;
             border-bottom: 1px solid var(--md-sys-color-surface-variant);
-            border-right: 1px solid var(--md-sys-color-surface-variant);
         }
 
-        .evaluation-table td:first-child {
-            text-align: left;
-            font-weight: 500;
-            padding-left: 16px;
-        }
-
-        .evaluation-table td:last-child {
-            border-right: none;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .evaluation-table tbody tr:hover {
+        .studies-table tbody tr:hover {
             background-color: var(--md-sys-color-surface-variant);
         }
 
-        .rating-strong {
+        .studies-table tbody tr.selected {
+            background-color: var(--md-sys-color-primary-container);
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .quality-high {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .quality-moderate {
+            background-color: #FFF8E1;
+            color: #F57C00;
+        }
+
+        .quality-low {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+
+        .quality-not-assessed {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .domain-score-cell {
+            text-align: center;
+            font-weight: 500;
+            padding: 12px 8px;
+        }
+
+        .score-box {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .score-excellent {
             background-color: #C8E6C9;
             color: #1B5E20;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 500;
         }
 
-        .rating-moderate {
+        .score-good {
             background-color: #FFF9C4;
             color: #F57F17;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 500;
         }
 
-        .rating-weak {
+        .score-fair {
+            background-color: #FFCCBC;
+            color: #BF360C;
+        }
+
+        .score-poor {
             background-color: #FFCDD2;
             color: #B71C1C;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 500;
+        }
+
+        .score-not-assessed {
+            background-color: #F5F5F5;
+            color: #757575;
         }
 
         .modal {
@@ -241,7 +266,7 @@
             background: white;
             padding: 24px;
             border-radius: 12px;
-            max-width: 800px;
+            max-width: 900px;
             width: 90%;
             margin: 40px auto;
             box-shadow: var(--md-elevation-3);
@@ -280,16 +305,32 @@
             background: var(--md-sys-color-surface-variant);
         }
 
-        .criterion-row {
-            margin-bottom: 20px;
-            padding: 16px;
+        .domain-section {
             background: var(--md-sys-color-surface-variant);
+            padding: 20px;
             border-radius: 8px;
+            margin-bottom: 24px;
         }
 
-        .criterion-label {
+        .domain-header {
+            font-size: 18px;
             font-weight: 500;
-            margin-bottom: 12px;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--md-sys-color-primary);
+        }
+
+        .criterion {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .criterion-question {
+            font-weight: 500;
+            margin-bottom: 8px;
             color: var(--md-sys-color-on-surface);
         }
 
@@ -300,38 +341,49 @@
             margin-bottom: 12px;
         }
 
-        .rating-options {
+        .score-options {
             display: flex;
             gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .rating-option {
+        .score-option {
             flex: 1;
         }
 
-        .rating-option input[type="radio"] {
+        .score-option input[type="radio"] {
             display: none;
         }
 
-        .rating-option label {
+        .score-option label {
             display: block;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid var(--md-sys-color-outline);
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: 500;
+            font-size: 13px;
         }
 
-        .rating-option input[type="radio"]:checked + label {
-            border-color: var(--md-sys-color-primary);
+        .score-option input[type="radio"]:checked + label {
             background: var(--md-sys-color-primary);
             color: white;
+            border-color: var(--md-sys-color-primary);
         }
 
-        .rating-option label:hover {
+        .score-option label:hover {
             border-color: var(--md-sys-color-primary);
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
         }
 
         .modal-actions {
@@ -343,36 +395,34 @@
             border-top: 1px solid var(--md-sys-color-surface-variant);
         }
 
-        .score-summary {
+        .summary-section {
             background: var(--md-sys-color-primary-container);
-            padding: 16px;
+            padding: 20px;
             border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
             text-align: center;
-            margin-top: 20px;
         }
 
-        .score-summary-value {
-            font-size: 32px;
-            font-weight: 600;
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 500;
             color: var(--md-sys-color-primary);
-        }
-
-        .info-box {
-            background: #E3F2FD;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--md-sys-color-primary);
-        }
-
-        .info-box h4 {
-            margin-bottom: 8px;
-            color: var(--md-sys-color-primary);
-        }
-
-        .info-box ul {
-            margin-left: 20px;
-            font-size: 14px;
         }
 
         .empty-state {
@@ -381,12 +431,16 @@
             color: #666;
         }
 
+        .empty-state h3 {
+            margin-bottom: 8px;
+        }
+
         @media (max-width: 768px) {
             .add-study-form {
                 grid-template-columns: 1fr;
             }
 
-            .rating-options {
+            .score-options {
                 flex-direction: column;
             }
         }
@@ -395,8 +449,8 @@
 <body>
     <div class="header">
         <div class="container">
-            <h1>CEBM Critical Appraisal Tool</h1>
-            <p>Quick assessment using Centre for Evidence-Based Medicine framework</p>
+            <h1>Critical Appraisal Tool for In Vitro Studies</h1>
+            <p>Comprehensive assessment of internal validity (risk of bias) and scientific quality</p>
         </div>
     </div>
 
@@ -405,16 +459,20 @@
             <h3 style="margin-bottom: 16px;">Add Study</h3>
             <div class="add-study-form">
                 <div class="input-group">
-                    <label for="study-citation">Study Citation (Author et al, Year)</label>
-                    <input type="text" id="study-citation" placeholder="e.g., Singh et al, 2019">
+                    <label for="study-author">First Author</label>
+                    <input type="text" id="study-author" placeholder="e.g., Smith">
                 </div>
                 <div class="input-group">
                     <label for="study-year">Year</label>
-                    <input type="number" id="study-year" min="1900" max="2100" placeholder="2019">
+                    <input type="number" id="study-year" min="1900" max="2100" placeholder="2024">
                 </div>
                 <div class="input-group">
-                    <label for="study-type">Study Type (optional)</label>
-                    <input type="text" id="study-type" placeholder="e.g., RCT, Cohort">
+                    <label for="study-journal">Journal</label>
+                    <input type="text" id="study-journal" placeholder="Journal name">
+                </div>
+                <div class="input-group">
+                    <label for="study-doi">DOI (optional)</label>
+                    <input type="text" id="study-doi" placeholder="10.xxxx/xxxxx">
                 </div>
                 <button class="btn btn-primary" onclick="addStudy()" style="align-self: end;">Add Study</button>
             </div>
@@ -426,45 +484,116 @@
             </div>
         </div>
 
-        <div class="info-box">
-            <h4>Scoring System</h4>
-            <ul>
-                <li><strong>Weak = 1 point:</strong> Significant concerns or limitations</li>
-                <li><strong>Moderate = 2 points:</strong> Some concerns but generally acceptable</li>
-                <li><strong>Strong = 3 points:</strong> Well-designed and executed with minimal concerns</li>
-            </ul>
-            <p style="margin-top: 8px; font-size: 14px;"><strong>Maximum Score:</strong> 21 points (7 criteria × 3 points each)</p>
-        </div>
-
-        <div class="evaluation-table-container">
-            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Paper Evaluation Table</h3>
-            <table class="evaluation-table">
+        <div class="studies-table-container">
+            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Study Overview</h3>
+            <table class="studies-table">
                 <thead>
                     <tr>
                         <th style="width: 30px;">
                             <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
                         </th>
-                        <th style="width: 180px;">Study</th>
-                        <th>Study<br>Design</th>
-                        <th>Selection<br>Bias</th>
-                        <th>Data Set<br>Size</th>
-                        <th>Data<br>Collection</th>
-                        <th>Statistical<br>Analysis</th>
-                        <th>Conflict of<br>Interest</th>
-                        <th>Time<br>Framing</th>
-                        <th style="width: 80px;">Score</th>
-                        <th style="width: 100px;">Actions</th>
+                        <th>Study</th>
+                        <th>Year</th>
+                        <th>Journal</th>
+                        <th>Quality Score</th>
+                        <th>Overall Rating</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="evaluation-tbody">
+                <tbody id="studies-tbody">
                     <tr>
-                        <td colspan="11" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <h3>No studies added yet</h3>
-                            <p>Add your first study above to begin the appraisal</p>
+                            <p>Add your first study above to begin the critical appraisal process</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="studies-table-container" id="domain-scores-container" style="display: none;">
+            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Domain Scores</h3>
+            <p style="padding: 0 20px 10px 20px; margin: 0; font-size: 14px; color: #666;">Color-coded assessment scores for each quality domain</p>
+            <table class="studies-table">
+                <thead>
+                    <tr>
+                        <th>Study</th>
+                        <th style="text-align: center;">Domain 1<br><small style="font-weight: normal; opacity: 0.8;">Rationale (max 8)</small></th>
+                        <th style="text-align: center;">Domain 2<br><small style="font-weight: normal; opacity: 0.8;">Validity (max 14)</small></th>
+                        <th style="text-align: center;">Domain 3<br><small style="font-weight: normal; opacity: 0.8;">Rigour (max 10)</small></th>
+                        <th style="text-align: center;">Domain 4<br><small style="font-weight: normal; opacity: 0.8;">Data Quality (max 8)</small></th>
+                        <th style="text-align: center;">Domain 5<br><small style="font-weight: normal; opacity: 0.8;">Interpretation (max 10)</small></th>
+                        <th style="text-align: center;">Total<br><small style="font-weight: normal; opacity: 0.8;">Overall %</small></th>
+                    </tr>
+                </thead>
+                <tbody id="domain-scores-tbody"></tbody>
+            </table>
+        </div>
+
+        <div style="background: #E3F2FD; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid var(--md-sys-color-primary);">
+            <h4 style="color: var(--md-sys-color-primary); margin-bottom: 12px;">What This Tool Assesses: Internal Validity (Risk of Bias)</h4>
+            <p style="margin-bottom: 12px;">This tool evaluates <strong>internal validity</strong> - the trustworthiness of a study's findings. It assesses whether the study design, methods, and analysis were rigorous enough to allow confident conclusions about the biological relationships being investigated. In essence: <em>Can we trust these results? Was the science done properly?</em></p>
+            <p style="margin-bottom: 12px;"><strong>Internal validity (risk of bias) asks:</strong> Are the study's conclusions likely to be accurate, or could methodological flaws, poor experimental design, or systematic errors have distorted the findings?</p>
+            <p style="margin-bottom: 8px;"><strong>This tool assesses five key domains:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px; margin-bottom: 12px;">
+                <li><strong>Scientific rationale:</strong> Is the question important and well-formulated?</li>
+                <li><strong>Scientific validity of methods:</strong> Do the methods actually test what they claim to test?</li>
+                <li><strong>Methodological rigour:</strong> Were appropriate controls, replication, and statistics used?</li>
+                <li><strong>Data quality:</strong> Are results believable and well-presented?</li>
+                <li><strong>Interpretation:</strong> Are conclusions justified by the data?</li>
+            </ul>
+            <p style="margin-bottom: 8px;"><strong>This tool does NOT assess:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px;">
+                <li><strong>External validity:</strong> Whether in vitro findings translate to in vivo or clinical contexts</li>
+                <li><strong>Generalizability:</strong> Whether findings apply to other cell types, species, or conditions</li>
+                <li><strong>Applicability:</strong> Whether this study directly addresses your systematic review question</li>
+            </ul>
+            <p style="margin-top: 12px; font-size: 14px;"><em>Note: A study can be methodologically rigorous (high internal validity) but have limited real-world applicability (low external validity). Both dimensions should be considered when synthesizing evidence!</em></p>
+        </div>
+
+        <div style="background: #FFF3E0; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #FF9800;">
+            <h4 style="color: #E65100; margin-bottom: 12px;">How to Report Risk of Bias Assessment in Your Thesis</h4>
+            <p style="margin-bottom: 12px;"><strong>Purpose of This Tool:</strong> This is a risk of bias assessment tool for systematic quality evaluation. It's one component of critical appraisal - you'll still need to apply critical thinking throughout your analysis and synthesis!</p>
+            
+            <p style="margin-bottom: 12px;"><strong>METHODS Section:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px; margin-bottom: 12px;">
+                <li>Describe the tool: "In vitro studies were assessed for risk of bias using a five-domain framework evaluating scientific rationale, methods validity, methodological rigour, data quality, and interpretation"</li>
+                <li>Explain scoring (0=No, 1=Partial, 2=Yes, N/A; maximum 50 points when all criteria apply)</li>
+                <li>State your approach: "Studies scoring <60% were excluded" OR "All studies were included regardless of quality, with risk of bias considered during synthesis"</li>
+                <li>State who conducted assessment and how disagreements were resolved</li>
+            </ul>
+            
+            <p style="margin-bottom: 12px;"><strong>RESULTS Section - Study Characteristics subsection:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px; margin-bottom: 12px;">
+                <li>Include the Domain Scores table in supplementary materials or appendix</li>
+                <li>Brief summary: "Risk of bias assessment identified 18 studies suitable for inclusion (scores 60-95%)" OR "All 22 identified studies were included; quality scores ranged from 45-92%"</li>
+                <li>Optionally note patterns: "Domain 3 (Methodological Rigour) showed the most variability, with only 8 studies achieving scores ≥80%"</li>
+            </ul>
+            
+            <p style="margin-bottom: 12px;"><strong>RESULTS Section - Evidence synthesis:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px; margin-bottom: 12px;">
+                <li>Structure depends on your supervisor's preference and your project:
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li><strong>Thematic:</strong> Group by mechanism, intervention type, or biological process</li>
+                        <li><strong>Paper-by-paper:</strong> Subsection per study with critical analysis of methods and findings</li>
+                        <li><strong>Outcome-focused:</strong> Organized by research questions or dependent variables</li>
+                        <li><strong>Chronological:</strong> Historical development of knowledge</li>
+                        <li><strong>Hybrid:</strong> Combination approaches</li>
+                    </ul>
+                </li>
+                <li><strong>Critical thinking throughout:</strong> Question claims, evaluate biological plausibility, note contradictions between studies, identify methodological limitations, highlight gaps in evidence</li>
+            </ul>
+            
+            <p style="margin-bottom: 12px;"><strong>DISCUSSION Section:</strong></p>
+            <ul style="margin-left: 20px; font-size: 14px;">
+                <li>Discuss how methodological quality affects confidence in conclusions</li>
+                <li>Address systematic weaknesses: "Widespread lack of proper controls (noted in 14/18 studies) raises concerns about specificity of reported effects"</li>
+                <li>Consider implications: "The predominance of single-cell-line studies limits confidence in generalizability"</li>
+                <li>If you excluded studies, acknowledge potential selection bias</li>
+            </ul>
+            
+            <p style="margin-top: 12px; font-size: 13px; font-style: italic;"><strong>Important distinction:</strong> This tool provides <em>systematic risk of bias assessment</em>. Critical appraisal is broader - it's the analytical thinking you apply when evaluating and synthesizing all evidence. Discuss synthesis approach with your supervisor!</p>
         </div>
     </div>
 
@@ -472,15 +601,40 @@
     <div id="assessmentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-study-title">Evaluate Study</h3>
+                <h3 id="modal-study-title">Critical Appraisal Assessment</h3>
                 <button class="close-btn" onclick="closeAssessmentModal()">&times;</button>
             </div>
 
             <div id="assessment-content"></div>
 
-            <div class="score-summary">
-                <div style="font-size: 14px; margin-bottom: 8px;">Total Score</div>
-                <div class="score-summary-value" id="total-score-display">0 / 21</div>
+            <div class="summary-section">
+                <h4 style="margin-bottom: 16px;">Assessment Summary</h4>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 1</div>
+                        <div class="summary-value" id="sum-domain1">0/8</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 2</div>
+                        <div class="summary-value" id="sum-domain2">0/14</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 3</div>
+                        <div class="summary-value" id="sum-domain3">0/10</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 4</div>
+                        <div class="summary-value" id="sum-domain4">0/8</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 5</div>
+                        <div class="summary-value" id="sum-domain5">0/10</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total Score</div>
+                        <div class="summary-value" id="sum-total">0%</div>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-actions">
@@ -495,104 +649,229 @@
         let currentStudyId = null;
         let studyIdCounter = 1;
 
-        const criteria = [
-            {
-                id: 'study_design',
-                label: 'Study Design',
-                description: 'Planning and execution of the study'
+        const assessmentStructure = {
+            domain1: {
+                name: "Scientific Rationale and Design",
+                max: 8,
+                criteria: [
+                    {
+                        id: "1.1",
+                        question: "Is the research question or objective clearly stated and scientifically important?",
+                        help: "Does the study address a meaningful gap in knowledge? Is it clear what they're trying to find out?"
+                    },
+                    {
+                        id: "1.2",
+                        question: "Is there a clear, testable hypothesis based on biological reasoning?",
+                        help: "Is the prediction grounded in biological/chemical theory? Does it make scientific sense?"
+                    },
+                    {
+                        id: "1.3",
+                        question: "Is the experimental model/system appropriate for answering the research question?",
+                        help: "E.g., using cancer cells to study normal physiology is problematic; is the in vitro system relevant to the biological process being studied?"
+                    },
+                    {
+                        id: "1.4",
+                        question: "Is the overall experimental design logical and appropriate?",
+                        help: "Does the experimental approach actually test the hypothesis? Is the sequence of experiments logical?"
+                    }
+                ]
             },
-            {
-                id: 'selection_bias',
-                label: 'Selection Bias',
-                description: 'Bias regarding selection of participants'
+            domain2: {
+                name: "Scientific Validity of Methods",
+                max: 14,
+                criteria: [
+                    {
+                        id: "2.1",
+                        question: "Do the chosen methods actually measure what the authors claim to measure?",
+                        help: "E.g., does the assay really detect apoptosis vs. necrosis? Are they measuring the right thing?"
+                    },
+                    {
+                        id: "2.2",
+                        question: "Are concentrations, doses, or conditions biologically/physiologically relevant?",
+                        help: "Are concentrations within physiological ranges? Would these conditions ever occur in a real biological system?"
+                    },
+                    {
+                        id: "2.3",
+                        question: "Are time points appropriate for the biological process being studied?",
+                        help: "E.g., looking at gene expression changes after 5 minutes when the biological response takes hours."
+                    },
+                    {
+                        id: "2.4",
+                        question: "Are positive and negative controls scientifically appropriate?",
+                        help: "Do controls actually validate that the system is working? Are they the right controls for this specific biological question?"
+                    },
+                    {
+                        id: "2.5",
+                        question: "Are cell lines, materials, or reagents properly authenticated and appropriate?",
+                        help: "Cell line identity verified? Passage number appropriate? Antibodies validated?"
+                    },
+                    {
+                        id: "2.6",
+                        question: "Did authors use multiple complementary approaches to validate key findings?",
+                        help: "Were important findings confirmed using different techniques? Testing across multiple cell lines?"
+                    },
+                    {
+                        id: "2.7",
+                        question: "Are methods described in sufficient detail to assess their scientific validity?",
+                        help: "Can you tell whether the methods are scientifically sound based on the information provided?"
+                    }
+                ]
             },
-            {
-                id: 'data_size',
-                label: 'Data Set Size',
-                description: 'Number of participants'
+            domain3: {
+                name: "Methodological Rigour",
+                max: 10,
+                criteria: [
+                    {
+                        id: "3.1",
+                        question: "Are experiments replicated with adequate sample size?",
+                        help: "Independent biological replicates clearly stated? Sample size justified or adequate?"
+                    },
+                    {
+                        id: "3.2",
+                        question: "Was randomisation used appropriately?",
+                        help: "Random allocation to treatment groups? Randomisation of sample processing order?"
+                    },
+                    {
+                        id: "3.3",
+                        question: "Was blinding used where appropriate?",
+                        help: "Blinded outcome assessment? Blinded data analysis?"
+                    },
+                    {
+                        id: "3.4",
+                        question: "Are statistical methods appropriate and clearly described?",
+                        help: "Correct tests for data type? Appropriate correction for multiple comparisons?"
+                    },
+                    {
+                        id: "3.5",
+                        question: "Is there evidence of selective reporting or other biases?",
+                        help: "Are all planned analyses reported? Missing data addressed? Only positive results shown?"
+                    }
+                ]
             },
-            {
-                id: 'data_collection',
-                label: 'Data Collection',
-                description: 'Methods of collection'
+            domain4: {
+                name: "Results and Data Quality",
+                max: 8,
+                criteria: [
+                    {
+                        id: "4.1",
+                        question: "Do the results make biological/scientific sense?",
+                        help: "Are the findings plausible given what we know about the biological system?"
+                    },
+                    {
+                        id: "4.2",
+                        question: "Are results clearly presented with appropriate data visualisation?",
+                        help: "Figures and tables clear and properly labelled? Error bars defined?"
+                    },
+                    {
+                        id: "4.3",
+                        question: "Are measures of variability and statistical significance properly reported?",
+                        help: "SD, SEM, or CI clearly stated? P-values or effect sizes reported?"
+                    },
+                    {
+                        id: "4.4",
+                        question: "Is there evidence of data quality issues?",
+                        help: "Image manipulation concerns? Inconsistent data? Controls not working properly?"
+                    }
+                ]
             },
-            {
-                id: 'statistical_analysis',
-                label: 'Statistical Analysis',
-                description: 'Reliability and complexity of mathematical tests employed'
-            },
-            {
-                id: 'conflict_of_interest',
-                label: 'Conflict of Interest',
-                description: 'Authorship bias'
-            },
-            {
-                id: 'time_framing',
-                label: 'Time Framing',
-                description: 'Reliability based on length of time study was conducted over'
+            domain5: {
+                name: "Interpretation and Scientific Reasoning",
+                max: 10,
+                criteria: [
+                    {
+                        id: "5.1",
+                        question: "Are conclusions directly supported by the results?",
+                        help: "Do authors overstate findings? Are claims justified by the data shown?"
+                    },
+                    {
+                        id: "5.2",
+                        question: "Are proposed mechanisms biologically plausible?",
+                        help: "Do the mechanistic explanations make sense? Are they consistent with known biology?"
+                    },
+                    {
+                        id: "5.3",
+                        question: "Do authors consider alternative explanations for their findings?",
+                        help: "Are other interpretations discussed? Do they acknowledge competing hypotheses?"
+                    },
+                    {
+                        id: "5.4",
+                        question: "Are study limitations honestly acknowledged and discussed?",
+                        help: "Do authors recognise methodological limitations? Acknowledge what the in vitro system cannot tell us?"
+                    },
+                    {
+                        id: "5.5",
+                        question: "Are results appropriately contextualised within existing literature?",
+                        help: "Do authors discuss how findings fit with previous work? Address contradictory findings?"
+                    }
+                ]
             }
-        ];
+        };
 
         function addStudy() {
-            const citation = document.getElementById('study-citation').value.trim();
+            const author = document.getElementById('study-author').value.trim();
             const year = document.getElementById('study-year').value.trim();
-            const type = document.getElementById('study-type').value.trim();
+            const journal = document.getElementById('study-journal').value.trim();
+            const doi = document.getElementById('study-doi').value.trim();
 
-            if (!citation) {
-                alert('Please enter a study citation');
+            if (!author || !year) {
+                alert('Please enter at least the first author and year');
                 return;
             }
 
             const study = {
                 id: studyIdCounter++,
-                citation,
+                author,
                 year,
-                type,
+                journal,
+                doi,
                 assessment: null,
                 assessed: false
             };
 
             studies.push(study);
 
-            document.getElementById('study-citation').value = '';
+            document.getElementById('study-author').value = '';
             document.getElementById('study-year').value = '';
-            document.getElementById('study-type').value = '';
+            document.getElementById('study-journal').value = '';
+            document.getElementById('study-doi').value = '';
 
             renderTable();
         }
 
         function renderTable() {
-            const tbody = document.getElementById('evaluation-tbody');
+            const tbody = document.getElementById('studies-tbody');
+            const domainTbody = document.getElementById('domain-scores-tbody');
+            const domainContainer = document.getElementById('domain-scores-container');
             
             if (studies.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="11" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <h3>No studies added yet</h3>
-                            <p>Add your first study above to begin the appraisal</p>
+                            <p>Add your first study above to begin the critical appraisal process</p>
                         </td>
                     </tr>
                 `;
+                domainContainer.style.display = 'none';
                 return;
             }
 
+            // Show domain scores table if any study is assessed
+            const hasAssessedStudies = studies.some(s => s.assessed);
+            domainContainer.style.display = hasAssessedStudies ? 'block' : 'none';
+
+            // Render main table
             tbody.innerHTML = studies.map(study => {
-                const assessmentCells = criteria.map(criterion => {
-                    if (!study.assessed) {
-                        return '<td>—</td>';
-                    }
-                    const rating = study.assessment[criterion.id];
-                    return `<td><span class="rating-${rating.toLowerCase()}">${rating}</span></td>`;
-                }).join('');
-
-                const totalScore = study.assessed ? calculateTotalScore(study) : '—';
-
+                const qualityInfo = getQualityInfo(study);
                 return `
-                    <tr>
+                    <tr data-study-id="${study.id}">
                         <td><input type="checkbox" class="study-checkbox" data-study-id="${study.id}"></td>
-                        <td><strong>${study.citation}</strong></td>
-                        ${assessmentCells}
-                        <td>${totalScore}</td>
+                        <td><strong>${study.author} et al.</strong></td>
+                        <td>${study.year}</td>
+                        <td>${study.journal || '—'}</td>
+                        <td>${qualityInfo.score}</td>
+                        <td><span class="quality-badge quality-${qualityInfo.class}">${qualityInfo.rating}</span></td>
+                        <td>${study.assessed ? '✓ Assessed' : 'Not assessed'}</td>
                         <td>
                             <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openAssessment(${study.id})">
                                 ${study.assessed ? 'Edit' : 'Assess'}
@@ -601,76 +880,227 @@
                     </tr>
                 `;
             }).join('');
+
+            // Render domain scores table
+            domainTbody.innerHTML = studies.map(study => {
+                if (!study.assessed) {
+                    return `
+                        <tr data-study-id="${study.id}">
+                            <td><strong>${study.author} et al. (${study.year})</strong></td>
+                            <td colspan="6" class="domain-score-cell">
+                                <span class="score-box score-not-assessed">Not assessed</span>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                const domainScores = calculateDomainScores(study);
+                
+                return `
+                    <tr data-study-id="${study.id}">
+                        <td><strong>${study.author} et al. (${study.year})</strong></td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain1.percentage)}">
+                                ${domainScores.domain1.score}/${domainScores.domain1.max}
+                                <br><small>${Math.round(domainScores.domain1.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain2.percentage)}">
+                                ${domainScores.domain2.score}/${domainScores.domain2.max}
+                                <br><small>${Math.round(domainScores.domain2.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain3.percentage)}">
+                                ${domainScores.domain3.score}/${domainScores.domain3.max}
+                                <br><small>${Math.round(domainScores.domain3.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain4.percentage)}">
+                                ${domainScores.domain4.score}/${domainScores.domain4.max}
+                                <br><small>${Math.round(domainScores.domain4.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain5.percentage)}">
+                                ${domainScores.domain5.score}/${domainScores.domain5.max}
+                                <br><small>${Math.round(domainScores.domain5.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(study.assessment.totalPercentage)}">
+                                ${study.assessment.totalScore}/${study.assessment.totalMax}
+                                <br><small>${Math.round(study.assessment.totalPercentage)}%</small>
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function calculateTotalScore(study) {
-            if (!study.assessed) return 0;
-            let total = 0;
-            criteria.forEach(criterion => {
-                const rating = study.assessment[criterion.id];
-                if (rating === 'Strong') total += 3;
-                else if (rating === 'Moderate') total += 2;
-                else if (rating === 'Weak') total += 1;
+        function calculateDomainScores(study) {
+            const domainScores = {};
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                let domainScore = 0;
+                let domainMax = 0;
+
+                domain.criteria.forEach(criterion => {
+                    const value = study.assessment?.[criterion.id];
+                    if (value && value.score !== 'na') {
+                        domainScore += value.score;
+                        domainMax += 2;
+                    }
+                });
+
+                const percentage = domainMax > 0 ? (domainScore / domainMax) * 100 : 0;
+                domainScores[domainKey] = { score: domainScore, max: domainMax, percentage };
             });
-            return total;
+
+            return domainScores;
+        }
+
+        function getScoreClass(percentage) {
+            if (percentage >= 80) return 'score-excellent';
+            if (percentage >= 60) return 'score-good';
+            if (percentage >= 40) return 'score-fair';
+            return 'score-poor';
+        }
+
+        function getQualityInfo(study) {
+            if (!study.assessed || !study.assessment) {
+                return {
+                    score: '—',
+                    rating: 'Not Assessed',
+                    class: 'not-assessed'
+                };
+            }
+
+            const percentage = study.assessment.totalPercentage;
+            let rating, cssClass;
+
+            if (percentage >= 80) {
+                rating = 'High Quality';
+                cssClass = 'high';
+            } else if (percentage >= 60) {
+                rating = 'Moderate Quality';
+                cssClass = 'moderate';
+            } else {
+                rating = 'Low Quality';
+                cssClass = 'low';
+            }
+
+            return {
+                score: `${Math.round(percentage)}%`,
+                rating,
+                class: cssClass
+            };
         }
 
         function openAssessment(studyId) {
             currentStudyId = studyId;
             const study = studies.find(s => s.id === studyId);
             
-            document.getElementById('modal-study-title').textContent = `Evaluate: ${study.citation}`;
+            document.getElementById('modal-study-title').textContent = 
+                `Critical Appraisal: ${study.author} et al. (${study.year})`;
 
             renderAssessmentForm(study);
             document.getElementById('assessmentModal').style.display = 'block';
-            updateScoreSummary();
+            updateSummary();
         }
 
         function renderAssessmentForm(study) {
             const content = document.getElementById('assessment-content');
             let html = '';
 
-            criteria.forEach(criterion => {
-                const savedValue = study.assessment?.[criterion.id] || '';
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
                 html += `
-                    <div class="criterion-row">
-                        <div class="criterion-label">${criterion.label}</div>
-                        <div class="criterion-help">${criterion.description}</div>
-                        <div class="rating-options">
-                            <div class="rating-option">
-                                <input type="radio" id="${criterion.id}-strong" name="${criterion.id}" value="Strong"
-                                    ${savedValue === 'Strong' ? 'checked' : ''} onchange="updateScoreSummary()">
-                                <label for="${criterion.id}-strong">Strong<br>(3 points)</label>
-                            </div>
-                            <div class="rating-option">
-                                <input type="radio" id="${criterion.id}-moderate" name="${criterion.id}" value="Moderate"
-                                    ${savedValue === 'Moderate' ? 'checked' : ''} onchange="updateScoreSummary()">
-                                <label for="${criterion.id}-moderate">Moderate<br>(2 points)</label>
-                            </div>
-                            <div class="rating-option">
-                                <input type="radio" id="${criterion.id}-weak" name="${criterion.id}" value="Weak"
-                                    ${savedValue === 'Weak' ? 'checked' : ''} onchange="updateScoreSummary()">
-                                <label for="${criterion.id}-weak">Weak<br>(1 point)</label>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="domain-section">
+                        <div class="domain-header">${domain.name} (Maximum: ${domain.max} points)</div>
                 `;
+
+                domain.criteria.forEach(criterion => {
+                    const savedValue = study.assessment?.[criterion.id];
+                    html += `
+                        <div class="criterion">
+                            <div class="criterion-question">${criterion.id}. ${criterion.question}</div>
+                            <div class="criterion-help">${criterion.help}</div>
+                            <div class="score-options">
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-2" name="${criterion.id}" value="2" 
+                                        ${savedValue?.score === 2 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-2">2 - Yes<br>Adequately addressed</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-1" name="${criterion.id}" value="1"
+                                        ${savedValue?.score === 1 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-1">1 - Partial<br>Partially or unclear</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-0" name="${criterion.id}" value="0"
+                                        ${savedValue?.score === 0 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-0">0 - No<br>Not addressed</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-na" name="${criterion.id}" value="na"
+                                        ${savedValue?.score === 'na' ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-na">N/A<br>Not applicable</label>
+                                </div>
+                            </div>
+                            <textarea class="notes-input" id="notes-${criterion.id}" placeholder="Notes (optional)...">${savedValue?.notes || ''}</textarea>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
             });
 
             content.innerHTML = html;
         }
 
-        function updateScoreSummary() {
-            let total = 0;
-            criteria.forEach(criterion => {
-                const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
-                if (selected) {
-                    if (selected.value === 'Strong') total += 3;
-                    else if (selected.value === 'Moderate') total += 2;
-                    else if (selected.value === 'Weak') total += 1;
-                }
+        function updateSummary() {
+            const domainScores = {};
+            let totalScore = 0;
+            let totalMax = 0;
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                let domainScore = 0;
+                let domainMax = 0;
+
+                domain.criteria.forEach(criterion => {
+                    const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                    if (selected) {
+                        const value = selected.value;
+                        if (value !== 'na') {
+                            domainScore += parseInt(value);
+                            domainMax += 2;
+                        }
+                    }
+                });
+
+                domainScores[domainKey] = { score: domainScore, max: domainMax };
+                totalScore += domainScore;
+                totalMax += domainMax;
             });
-            document.getElementById('total-score-display').textContent = `${total} / 21`;
+
+            document.getElementById('sum-domain1').textContent = 
+                `${domainScores.domain1.score}/${domainScores.domain1.max}`;
+            document.getElementById('sum-domain2').textContent = 
+                `${domainScores.domain2.score}/${domainScores.domain2.max}`;
+            document.getElementById('sum-domain3').textContent = 
+                `${domainScores.domain3.score}/${domainScores.domain3.max}`;
+            document.getElementById('sum-domain4').textContent = 
+                `${domainScores.domain4.score}/${domainScores.domain4.max}`;
+            document.getElementById('sum-domain5').textContent = 
+                `${domainScores.domain5.score}/${domainScores.domain5.max}`;
+
+            const percentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+            document.getElementById('sum-total').textContent = `${percentage}%`;
         }
 
         function saveAssessment() {
@@ -678,21 +1108,46 @@
             if (!study) return;
 
             const assessment = {};
-            let hasAllRatings = true;
+            let hasAnyScore = false;
 
-            criteria.forEach(criterion => {
-                const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
-                if (selected) {
-                    assessment[criterion.id] = selected.value;
-                } else {
-                    hasAllRatings = false;
-                }
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                domain.criteria.forEach(criterion => {
+                    const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                    const notes = document.getElementById(`notes-${criterion.id}`).value;
+                    
+                    if (selected) {
+                        hasAnyScore = true;
+                        assessment[criterion.id] = {
+                            score: selected.value === 'na' ? 'na' : parseInt(selected.value),
+                            notes: notes
+                        };
+                    }
+                });
             });
 
-            if (!hasAllRatings) {
-                alert('Please rate all criteria before saving.');
+            if (!hasAnyScore) {
+                alert('Please complete at least some of the assessment before saving.');
                 return;
             }
+
+            let totalScore = 0;
+            let totalMax = 0;
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                domain.criteria.forEach(criterion => {
+                    const value = assessment[criterion.id];
+                    if (value && value.score !== 'na') {
+                        totalScore += value.score;
+                        totalMax += 2;
+                    }
+                });
+            });
+
+            assessment.totalScore = totalScore;
+            assessment.totalMax = totalMax;
+            assessment.totalPercentage = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
 
             study.assessment = assessment;
             study.assessed = true;
@@ -731,15 +1186,9 @@
         }
 
         function saveProject() {
-            if (studies.length === 0) {
-                alert('No studies to save');
-                return;
-            }
-
             const projectData = {
                 studies: studies,
-                exported: new Date().toISOString(),
-                version: '1.0'
+                exported: new Date().toISOString()
             };
 
             const dataStr = JSON.stringify(projectData, null, 2);
@@ -748,13 +1197,10 @@
 
             const link = document.createElement('a');
             link.href = url;
-            link.download = `cebm-appraisal-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
+            link.download = `critical-appraisal-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            document.body.removeChild(link);
+
             URL.revokeObjectURL(url);
-            
-            alert('Project saved successfully!');
         }
 
         function loadProject() {
@@ -790,36 +1236,30 @@
                 return;
             }
 
-            let csv = 'Study,Year,Type,Study Design,Selection Bias,Data Set Size,Data Collection,Statistical Analysis,Conflict of Interest,Time Framing,Total Score\n';
+            let csv = 'Author,Year,Journal,DOI,Assessed,Total Score,Percentage,Quality Rating\n';
 
             studies.forEach(study => {
+                const qualityInfo = getQualityInfo(study);
                 const row = [
-                    study.citation,
-                    study.year || '',
-                    study.type || '',
-                    study.assessed ? study.assessment.study_design : 'Not assessed',
-                    study.assessed ? study.assessment.selection_bias : 'Not assessed',
-                    study.assessed ? study.assessment.data_size : 'Not assessed',
-                    study.assessed ? study.assessment.data_collection : 'Not assessed',
-                    study.assessed ? study.assessment.statistical_analysis : 'Not assessed',
-                    study.assessed ? study.assessment.conflict_of_interest : 'Not assessed',
-                    study.assessed ? study.assessment.time_framing : 'Not assessed',
-                    study.assessed ? calculateTotalScore(study) : '0'
-                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+                    study.author,
+                    study.year,
+                    study.journal || '',
+                    study.doi || '',
+                    study.assessed ? 'Yes' : 'No',
+                    study.assessed ? `${study.assessment.totalScore}/${study.assessment.totalMax}` : '',
+                    qualityInfo.score,
+                    qualityInfo.rating
+                ].map(field => `"${field}"`).join(',');
                 csv += row + '\n';
             });
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `cebm-appraisal-export-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link);
+            link.download = `critical-appraisal-export-${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
-            document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
-            alert('CSV file downloaded successfully!');
         }
 
         window.addEventListener('click', function(event) {
