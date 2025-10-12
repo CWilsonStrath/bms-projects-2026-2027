@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critical Appraisal Tool for In Vitro Studies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --md-sys-color-primary: #1565C0;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #D3E3FD;
+            --md-sys-color-secondary: #5A6069;
+            --md-sys-color-surface: #FEFBFF;
+            --md-sys-color-on-surface: #1B1B1F;
+            --md-sys-color-surface-variant: #E0E2EC;
+            --md-sys-color-outline: #74777F;
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-warning: #FF9800;
+            --md-sys-color-error: #F44336;
+            --md-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --md-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.5;
+            color: var(--md-sys-color-on-surface);
+            background-color: var(--md-sys-color-surface);
+        }
+
+        .header {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            padding: 24px 0;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.87;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--md-elevation-1);
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .add-study-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--md-sys-color-on-surface);
+            font-size: 14px;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            padding: 12px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            border-width: 2px;
+            padding: 11px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-secondary {
+            background-color: var(--md-sys-color-secondary);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--md-sys-color-success);
+            color: white;
+        }
+
+        .btn-error {
+            background-color: var(--md-sys-color-error);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .studies-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--md-elevation-1);
+            margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        .studies-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .studies-table thead {
+            background: var(--md-sys-color-primary);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .studies-table th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .studies-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--md-sys-color-surface-variant);
+        }
+
+        .studies-table tbody tr:hover {
+            background-color: var(--md-sys-color-surface-variant);
+        }
+
+        .studies-table tbody tr.selected {
+            background-color: var(--md-sys-color-primary-container);
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .quality-high {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .quality-moderate {
+            background-color: #FFF8E1;
+            color: #F57C00;
+        }
+
+        .quality-low {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+
+        .quality-not-assessed {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 900px;
+            width: 90%;
+            margin: 40px auto;
+            box-shadow: var(--md-elevation-3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--md-sys-color-primary);
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--md-sys-color-on-surface);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .domain-section {
+            background: var(--md-sys-color-surface-variant);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .domain-header {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--md-sys-color-primary);
+        }
+
+        .criterion {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .criterion-question {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .criterion-help {
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+
+        .score-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .score-option {
+            flex: 1;
+        }
+
+        .score-option input[type="radio"] {
+            display: none;
+        }
+
+        .score-option label {
+            display: block;
+            padding: 10px;
+            border: 2px solid var(--md-sys-color-outline);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .score-option input[type="radio"]:checked + label {
+            background: var(--md-sys-color-primary);
+            color: white;
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .score-option label:hover {
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--md-sys-color-surface-variant);
+        }
+
+        .summary-section {
+            background: var(--md-sys-color-primary-container);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .add-study-form {
+                grid-template-columns: 1fr;
+            }
+
+            .score-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Critical Appraisal Tool for In Vitro Studies</h1>
+            <p>Systematic assessment of scientific validity and methodological quality</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <h3 style="margin-bottom: 16px;">Add Study</h3>
+            <div class="add-study-form">
+                <div class="input-group">
+                    <label for="study-author">First Author</label>
+                    <input type="text" id="study-author" placeholder="e.g., Smith">
+                </div>
+                <div class="input-group">
+                    <label for="study-year">Year</label>
+                    <input type="number" id="study-year" min="1900" max="2100" placeholder="2024">
+                </div>
+                <div class="input-group">
+                    <label for="study-journal">Journal</label>
+                    <input type="text" id="study-journal" placeholder="Journal name">
+                </div>
+                <div class="input-group">
+                    <label for="study-doi">DOI (optional)</label>
+                    <input type="text" id="study-doi" placeholder="10.xxxx/xxxxx">
+                </div>
+                <button class="btn btn-primary" onclick="addStudy()" style="align-self: end;">Add Study</button>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="deleteSelected()">Delete Selected</button>
+                <button class="btn btn-success" onclick="saveProject()">Save Project</button>
+                <button class="btn btn-secondary" onclick="loadProject()">Load Project</button>
+                <button class="btn btn-secondary" onclick="exportToCSV()">Export to CSV</button>
+            </div>
+        </div>
+
+        <div class="studies-table-container">
+            <table class="studies-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">
+                            <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                        </th>
+                        <th>Study</th>
+                        <th>Year</th>
+                        <th>Journal</th>
+                        <th>Quality Score</th>
+                        <th>Overall Rating</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studies-tbody">
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>No studies added yet</h3>
+                            <p>Add your first study above to begin the critical appraisal process</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Assessment Modal -->
+    <div id="assessmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-study-title">Critical Appraisal Assessment</h3>
+                <button class="close-btn" onclick="closeAssessmentModal()">&times;</button>
+            </div>
+
+            <div id="assessment-content"></div>
+
+            <div class="summary-section">
+                <h4 style="margin-bottom: 16px;">Assessment Summary</h4>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 1</div>
+                        <div class="summary-value" id="sum-domain1">0/8</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 2</div>
+                        <div class="summary-value" id="sum-domain2">0/14</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 3</div>
+                        <div class="summary-value" id="sum-domain3">0/10</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 4</div>
+                        <div class="summary-value" id="sum-domain4">0/8</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Domain 5</div>
+                        <div class="summary-value" id="sum-domain5">0/10</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total Score</div>
+                        <div class="summary-value" id="sum-total">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAssessmentModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAssessment()">Save Assessment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studies = [];
+        let currentStudyId = null;
+        let studyIdCounter = 1;
+
+        const assessmentStructure = {
+            domain1: {
+                name: "Scientific Rationale and Design",
+                max: 8,
+                criteria: [
+                    {
+                        id: "1.1",
+                        question: "Is the research question or objective clearly stated and scientifically important?",
+                        help: "Does the study address a meaningful gap in knowledge? Is it clear what they're trying to find out?"
+                    },
+                    {
+                        id: "1.2",
+                        question: "Is there a clear, testable hypothesis based on biological reasoning?",
+                        help: "Is the prediction grounded in biological/chemical theory? Does it make scientific sense?"
+                    },
+                    {
+                        id: "1.3",
+                        question: "Is the experimental model/system appropriate for answering the research question?",
+                        help: "E.g., using cancer cells to study normal physiology is problematic; is the in vitro system relevant to the biological process being studied?"
+                    },
+                    {
+                        id: "1.4",
+                        question: "Is the overall experimental design logical and appropriate?",
+                        help: "Does the experimental approach actually test the hypothesis? Is the sequence of experiments logical?"
+                    }
+                ]
+            },
+            domain2: {
+                name: "Scientific Validity of Methods",
+                max: 14,
+                criteria: [
+                    {
+                        id: "2.1",
+                        question: "Do the chosen methods actually measure what the authors claim to measure?",
+                        help: "E.g., does the assay really detect apoptosis vs. necrosis? Are they measuring the right thing?"
+                    },
+                    {
+                        id: "2.2",
+                        question: "Are concentrations, doses, or conditions biologically/physiologically relevant?",
+                        help: "Are concentrations within physiological ranges? Would these conditions ever occur in a real biological system?"
+                    },
+                    {
+                        id: "2.3",
+                        question: "Are time points appropriate for the biological process being studied?",
+                        help: "E.g., looking at gene expression changes after 5 minutes when the biological response takes hours."
+                    },
+                    {
+                        id: "2.4",
+                        question: "Are positive and negative controls scientifically appropriate?",
+                        help: "Do controls actually validate that the system is working? Are they the right controls for this specific biological question?"
+                    },
+                    {
+                        id: "2.5",
+                        question: "Are cell lines, materials, or reagents properly authenticated and appropriate?",
+                        help: "Cell line identity verified? Passage number appropriate? Antibodies validated?"
+                    },
+                    {
+                        id: "2.6",
+                        question: "Did authors use multiple complementary approaches to validate key findings?",
+                        help: "Were important findings confirmed using different techniques? Testing across multiple cell lines?"
+                    },
+                    {
+                        id: "2.7",
+                        question: "Are methods described in sufficient detail to assess their scientific validity?",
+                        help: "Can you tell whether the methods are scientifically sound based on the information provided?"
+                    }
+                ]
+            },
+            domain3: {
+                name: "Methodological Rigour",
+                max: 10,
+                criteria: [
+                    {
+                        id: "3.1",
+                        question: "Are experiments replicated with adequate sample size?",
+                        help: "Independent biological replicates clearly stated? Sample size justified or adequate?"
+                    },
+                    {
+                        id: "3.2",
+                        question: "Was randomisation used appropriately?",
+                        help: "Random allocation to treatment groups? Randomisation of sample processing order?"
+                    },
+                    {
+                        id: "3.3",
+                        question: "Was blinding used where appropriate?",
+                        help: "Blinded outcome assessment? Blinded data analysis?"
+                    },
+                    {
+                        id: "3.4",
+                        question: "Are statistical methods appropriate and clearly described?",
+                        help: "Correct tests for data type? Appropriate correction for multiple comparisons?"
+                    },
+                    {
+                        id: "3.5",
+                        question: "Is there evidence of selective reporting or other biases?",
+                        help: "Are all planned analyses reported? Missing data addressed? Only positive results shown?"
+                    }
+                ]
+            },
+            domain4: {
+                name: "Results and Data Quality",
+                max: 8,
+                criteria: [
+                    {
+                        id: "4.1",
+                        question: "Do the results make biological/scientific sense?",
+                        help: "Are the findings plausible given what we know about the biological system?"
+                    },
+                    {
+                        id: "4.2",
+                        question: "Are results clearly presented with appropriate data visualisation?",
+                        help: "Figures and tables clear and properly labelled? Error bars defined?"
+                    },
+                    {
+                        id: "4.3",
+                        question: "Are measures of variability and statistical significance properly reported?",
+                        help: "SD, SEM, or CI clearly stated? P-values or effect sizes reported?"
+                    },
+                    {
+                        id: "4.4",
+                        question: "Is there evidence of data quality issues?",
+                        help: "Image manipulation concerns? Inconsistent data? Controls not working properly?"
+                    }
+                ]
+            },
+            domain5: {
+                name: "Interpretation and Scientific Reasoning",
+                max: 10,
+                criteria: [
+                    {
+                        id: "5.1",
+                        question: "Are conclusions directly supported by the results?",
+                        help: "Do authors overstate findings? Are claims justified by the data shown?"
+                    },
+                    {
+                        id: "5.2",
+                        question: "Are proposed mechanisms biologically plausible?",
+                        help: "Do the mechanistic explanations make sense? Are they consistent with known biology?"
+                    },
+                    {
+                        id: "5.3",
+                        question: "Do authors consider alternative explanations for their findings?",
+                        help: "Are other interpretations discussed? Do they acknowledge competing hypotheses?"
+                    },
+                    {
+                        id: "5.4",
+                        question: "Are study limitations honestly acknowledged and discussed?",
+                        help: "Do authors recognise methodological limitations? Acknowledge what the in vitro system cannot tell us?"
+                    },
+                    {
+                        id: "5.5",
+                        question: "Are results appropriately contextualised within existing literature?",
+                        help: "Do authors discuss how findings fit with previous work? Address contradictory findings?"
+                    }
+                ]
+            }
+        };
+
+        function addStudy() {
+            const author = document.getElementById('study-author').value.trim();
+            const year = document.getElementById('study-year').value.trim();
+            const journal = document.getElementById('study-journal').value.trim();
+            const doi = document.getElementById('study-doi').value.trim();
+
+            if (!author || !year) {
+                alert('Please enter at least the first author and year');
+                return;
+            }
+
+            const study = {
+                id: studyIdCounter++,
+                author,
+                year,
+                journal,
+                doi,
+                assessment: null,
+                assessed: false
+            };
+
+            studies.push(study);
+
+            document.getElementById('study-author').value = '';
+            document.getElementById('study-year').value = '';
+            document.getElementById('study-journal').value = '';
+            document.getElementById('study-doi').value = '';
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('studies-tbody');
+            
+            if (studies.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>No studies added yet</h3>
+                            <p>Add your first study above to begin the critical appraisal process</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = studies.map(study => {
+                const qualityInfo = getQualityInfo(study);
+                return `
+                    <tr data-study-id="${study.id}">
+                        <td><input type="checkbox" class="study-checkbox" data-study-id="${study.id}"></td>
+                        <td><strong>${study.author} et al.</strong></td>
+                        <td>${study.year}</td>
+                        <td>${study.journal || '—'}</td>
+                        <td>${qualityInfo.score}</td>
+                        <td><span class="quality-badge quality-${qualityInfo.class}">${qualityInfo.rating}</span></td>
+                        <td>${study.assessed ? '✓ Assessed' : 'Not assessed'}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openAssessment(${study.id})">
+                                ${study.assessed ? 'Edit' : 'Assess'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getQualityInfo(study) {
+            if (!study.assessed || !study.assessment) {
+                return {
+                    score: '—',
+                    rating: 'Not Assessed',
+                    class: 'not-assessed'
+                };
+            }
+
+            const percentage = study.assessment.totalPercentage;
+            let rating, cssClass;
+
+            if (percentage >= 80) {
+                rating = 'High Quality';
+                cssClass = 'high';
+            } else if (percentage >= 60) {
+                rating = 'Moderate Quality';
+                cssClass = 'moderate';
+            } else {
+                rating = 'Low Quality';
+                cssClass = 'low';
+            }
+
+            return {
+                score: `${Math.round(percentage)}%`,
+                rating,
+                class: cssClass
+            };
+        }
+
+        function openAssessment(studyId) {
+            currentStudyId = studyId;
+            const study = studies.find(s => s.id === studyId);
+            
+            document.getElementById('modal-study-title').textContent = 
+                `Critical Appraisal: ${study.author} et al. (${study.year})`;
+
+            renderAssessmentForm(study);
+            document.getElementById('assessmentModal').style.display = 'block';
+            updateSummary();
+        }
+
+        function renderAssessmentForm(study) {
+            const content = document.getElementById('assessment-content');
+            let html = '';
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                html += `
+                    <div class="domain-section">
+                        <div class="domain-header">${domain.name} (Maximum: ${domain.max} points)</div>
+                `;
+
+                domain.criteria.forEach(criterion => {
+                    const savedValue = study.assessment?.[criterion.id];
+                    html += `
+                        <div class="criterion">
+                            <div class="criterion-question">${criterion.id}. ${criterion.question}</div>
+                            <div class="criterion-help">${criterion.help}</div>
+                            <div class="score-options">
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-2" name="${criterion.id}" value="2" 
+                                        ${savedValue?.score === 2 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-2">2 - Yes<br>Adequately addressed</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-1" name="${criterion.id}" value="1"
+                                        ${savedValue?.score === 1 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-1">1 - Partial<br>Partially or unclear</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-0" name="${criterion.id}" value="0"
+                                        ${savedValue?.score === 0 ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-0">0 - No<br>Not addressed</label>
+                                </div>
+                                <div class="score-option">
+                                    <input type="radio" id="${criterion.id}-na" name="${criterion.id}" value="na"
+                                        ${savedValue?.score === 'na' ? 'checked' : ''} onchange="updateSummary()">
+                                    <label for="${criterion.id}-na">N/A<br>Not applicable</label>
+                                </div>
+                            </div>
+                            <textarea class="notes-input" id="notes-${criterion.id}" placeholder="Notes (optional)...">${savedValue?.notes || ''}</textarea>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            content.innerHTML = html;
+        }
+
+        function updateSummary() {
+            const domainScores = {};
+            let totalScore = 0;
+            let totalMax = 0;
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                let domainScore = 0;
+                let domainMax = 0;
+
+                domain.criteria.forEach(criterion => {
+                    const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                    if (selected) {
+                        const value = selected.value;
+                        if (value !== 'na') {
+                            domainScore += parseInt(value);
+                            domainMax += 2;
+                        }
+                    }
+                });
+
+                domainScores[domainKey] = { score: domainScore, max: domainMax };
+                totalScore += domainScore;
+                totalMax += domainMax;
+            });
+
+            document.getElementById('sum-domain1').textContent = 
+                `${domainScores.domain1.score}/${domainScores.domain1.max}`;
+            document.getElementById('sum-domain2').textContent = 
+                `${domainScores.domain2.score}/${domainScores.domain2.max}`;
+            document.getElementById('sum-domain3').textContent = 
+                `${domainScores.domain3.score}/${domainScores.domain3.max}`;
+            document.getElementById('sum-domain4').textContent = 
+                `${domainScores.domain4.score}/${domainScores.domain4.max}`;
+            document.getElementById('sum-domain5').textContent = 
+                `${domainScores.domain5.score}/${domainScores.domain5.max}`;
+
+            const percentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+            document.getElementById('sum-total').textContent = `${percentage}%`;
+        }
+
+        function saveAssessment() {
+            const study = studies.find(s => s.id === currentStudyId);
+            if (!study) return;
+
+            const assessment = {};
+            let hasAnyScore = false;
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                domain.criteria.forEach(criterion => {
+                    const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                    const notes = document.getElementById(`notes-${criterion.id}`).value;
+                    
+                    if (selected) {
+                        hasAnyScore = true;
+                        assessment[criterion.id] = {
+                            score: selected.value === 'na' ? 'na' : parseInt(selected.value),
+                            notes: notes
+                        };
+                    }
+                });
+            });
+
+            if (!hasAnyScore) {
+                alert('Please complete at least some of the assessment before saving.');
+                return;
+            }
+
+            let totalScore = 0;
+            let totalMax = 0;
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                domain.criteria.forEach(criterion => {
+                    const value = assessment[criterion.id];
+                    if (value && value.score !== 'na') {
+                        totalScore += value.score;
+                        totalMax += 2;
+                    }
+                });
+            });
+
+            assessment.totalScore = totalScore;
+            assessment.totalMax = totalMax;
+            assessment.totalPercentage = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
+
+            study.assessment = assessment;
+            study.assessed = true;
+
+            closeAssessmentModal();
+            renderTable();
+        }
+
+        function closeAssessmentModal() {
+            document.getElementById('assessmentModal').style.display = 'none';
+            currentStudyId = null;
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.study-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        }
+
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.study-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one study to delete');
+                return;
+            }
+
+            if (!confirm(`Delete ${checkboxes.length} selected study/studies?`)) {
+                return;
+            }
+
+            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.studyId));
+            studies = studies.filter(s => !idsToDelete.includes(s.id));
+            
+            document.getElementById('select-all').checked = false;
+            renderTable();
+        }
+
+        function saveProject() {
+            const projectData = {
+                studies: studies,
+                exported: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(projectData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `critical-appraisal-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        function loadProject() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const projectData = JSON.parse(e.target.result);
+                        studies = projectData.studies || [];
+                        studyIdCounter = studies.length > 0 ? Math.max(...studies.map(s => s.id)) + 1 : 1;
+                        renderTable();
+                        alert('Project loaded successfully!');
+                    } catch (error) {
+                        alert('Error loading project file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function exportToCSV() {
+            if (studies.length === 0) {
+                alert('No studies to export');
+                return;
+            }
+
+            let csv = 'Author,Year,Journal,DOI,Assessed,Total Score,Percentage,Quality Rating\n';
+
+            studies.forEach(study => {
+                const qualityInfo = getQualityInfo(study);
+                const row = [
+                    study.author,
+                    study.year,
+                    study.journal || '',
+                    study.doi || '',
+                    study.assessed ? 'Yes' : 'No',
+                    study.assessed ? `${study.assessment.totalScore}/${study.assessment.totalMax}` : '',
+                    qualityInfo.score,
+                    qualityInfo.rating
+                ].map(field => `"${field}"`).join(',');
+                csv += row + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `critical-appraisal-export-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('assessmentModal');
+            if (event.target === modal) {
+                closeAssessmentModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+        });
+    </script>
+</body>
+</html>
