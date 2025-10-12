@@ -210,6 +210,45 @@
             color: var(--md-sys-color-on-surface);
         }
 
+        .domain-score-cell {
+            text-align: center;
+            font-weight: 500;
+            padding: 12px 8px;
+        }
+
+        .score-box {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .score-excellent {
+            background-color: #C8E6C9;
+            color: #1B5E20;
+        }
+
+        .score-good {
+            background-color: #FFF9C4;
+            color: #F57F17;
+        }
+
+        .score-fair {
+            background-color: #FFCCBC;
+            color: #BF360C;
+        }
+
+        .score-poor {
+            background-color: #FFCDD2;
+            color: #B71C1C;
+        }
+
+        .score-not-assessed {
+            background-color: #F5F5F5;
+            color: #757575;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -446,6 +485,7 @@
         </div>
 
         <div class="studies-table-container">
+            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Study Overview</h3>
             <table class="studies-table">
                 <thead>
                     <tr>
@@ -469,6 +509,25 @@
                         </td>
                     </tr>
                 </tbody>
+            </table>
+        </div>
+
+        <div class="studies-table-container" id="domain-scores-container" style="display: none;">
+            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Domain Scores</h3>
+            <p style="padding: 0 20px 10px 20px; margin: 0; font-size: 14px; color: #666;">Color-coded assessment scores for each quality domain</p>
+            <table class="studies-table">
+                <thead>
+                    <tr>
+                        <th>Study</th>
+                        <th style="text-align: center;">Domain 1<br><small style="font-weight: normal; opacity: 0.8;">Rationale (max 8)</small></th>
+                        <th style="text-align: center;">Domain 2<br><small style="font-weight: normal; opacity: 0.8;">Validity (max 14)</small></th>
+                        <th style="text-align: center;">Domain 3<br><small style="font-weight: normal; opacity: 0.8;">Rigour (max 10)</small></th>
+                        <th style="text-align: center;">Domain 4<br><small style="font-weight: normal; opacity: 0.8;">Data Quality (max 8)</small></th>
+                        <th style="text-align: center;">Domain 5<br><small style="font-weight: normal; opacity: 0.8;">Interpretation (max 10)</small></th>
+                        <th style="text-align: center;">Total<br><small style="font-weight: normal; opacity: 0.8;">Overall %</small></th>
+                    </tr>
+                </thead>
+                <tbody id="domain-scores-tbody"></tbody>
             </table>
         </div>
     </div>
@@ -716,6 +775,8 @@
 
         function renderTable() {
             const tbody = document.getElementById('studies-tbody');
+            const domainTbody = document.getElementById('domain-scores-tbody');
+            const domainContainer = document.getElementById('domain-scores-container');
             
             if (studies.length === 0) {
                 tbody.innerHTML = `
@@ -726,9 +787,15 @@
                         </td>
                     </tr>
                 `;
+                domainContainer.style.display = 'none';
                 return;
             }
 
+            // Show domain scores table if any study is assessed
+            const hasAssessedStudies = studies.some(s => s.assessed);
+            domainContainer.style.display = hasAssessedStudies ? 'block' : 'none';
+
+            // Render main table
             tbody.innerHTML = studies.map(study => {
                 const qualityInfo = getQualityInfo(study);
                 return `
@@ -748,6 +815,94 @@
                     </tr>
                 `;
             }).join('');
+
+            // Render domain scores table
+            domainTbody.innerHTML = studies.map(study => {
+                if (!study.assessed) {
+                    return `
+                        <tr data-study-id="${study.id}">
+                            <td><strong>${study.author} et al. (${study.year})</strong></td>
+                            <td colspan="6" class="domain-score-cell">
+                                <span class="score-box score-not-assessed">Not assessed</span>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                const domainScores = calculateDomainScores(study);
+                
+                return `
+                    <tr data-study-id="${study.id}">
+                        <td><strong>${study.author} et al. (${study.year})</strong></td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain1.percentage)}">
+                                ${domainScores.domain1.score}/${domainScores.domain1.max}
+                                <br><small>${Math.round(domainScores.domain1.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain2.percentage)}">
+                                ${domainScores.domain2.score}/${domainScores.domain2.max}
+                                <br><small>${Math.round(domainScores.domain2.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain3.percentage)}">
+                                ${domainScores.domain3.score}/${domainScores.domain3.max}
+                                <br><small>${Math.round(domainScores.domain3.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain4.percentage)}">
+                                ${domainScores.domain4.score}/${domainScores.domain4.max}
+                                <br><small>${Math.round(domainScores.domain4.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(domainScores.domain5.percentage)}">
+                                ${domainScores.domain5.score}/${domainScores.domain5.max}
+                                <br><small>${Math.round(domainScores.domain5.percentage)}%</small>
+                            </span>
+                        </td>
+                        <td class="domain-score-cell">
+                            <span class="score-box ${getScoreClass(study.assessment.totalPercentage)}">
+                                ${study.assessment.totalScore}/${study.assessment.totalMax}
+                                <br><small>${Math.round(study.assessment.totalPercentage)}%</small>
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateDomainScores(study) {
+            const domainScores = {};
+
+            Object.keys(assessmentStructure).forEach(domainKey => {
+                const domain = assessmentStructure[domainKey];
+                let domainScore = 0;
+                let domainMax = 0;
+
+                domain.criteria.forEach(criterion => {
+                    const value = study.assessment?.[criterion.id];
+                    if (value && value.score !== 'na') {
+                        domainScore += value.score;
+                        domainMax += 2;
+                    }
+                });
+
+                const percentage = domainMax > 0 ? (domainScore / domainMax) * 100 : 0;
+                domainScores[domainKey] = { score: domainScore, max: domainMax, percentage };
+            });
+
+            return domainScores;
+        }
+
+        function getScoreClass(percentage) {
+            if (percentage >= 80) return 'score-excellent';
+            if (percentage >= 60) return 'score-good';
+            if (percentage >= 40) return 'score-fair';
+            return 'score-poor';
         }
 
         function getQualityInfo(study) {
