@@ -435,6 +435,25 @@
             margin-bottom: 8px;
         }
 
+        .info-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+
+        .info-box h4 {
+            margin-bottom: 12px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        .info-box p {
+            margin-bottom: 12px;
+        }
+
         @media (max-width: 768px) {
             .add-study-form {
                 grid-template-columns: 1fr;
@@ -450,7 +469,7 @@
     <div class="header">
         <div class="container">
             <h1>Critical Appraisal Tool for In Vitro Studies</h1>
-            <p>Systematic assessment of scientific validity and methodological quality</p>
+            <p>Comprehensive assessment of internal validity (risk of bias) and scientific quality</p>
         </div>
     </div>
 
@@ -529,6 +548,71 @@
                 </thead>
                 <tbody id="domain-scores-tbody"></tbody>
             </table>
+        </div>
+
+        <div class="info-box" style="background: #E3F2FD; border-left: 4px solid var(--md-sys-color-primary);">
+            <h4 style="color: var(--md-sys-color-primary);">What This Tool Assesses: Internal Validity (Risk of Bias)</h4>
+            <p>This tool evaluates <strong>internal validity</strong> - the trustworthiness of a study's findings. It assesses whether the study design, methods, and analysis were rigorous enough to allow confident conclusions about the biological relationships being investigated. In essence: <em>Can we trust these results? Was the science done properly?</em></p>
+            <p><strong>Internal validity (risk of bias) asks:</strong> Are the study's conclusions likely to be accurate, or could methodological flaws, poor experimental design, or systematic errors have distorted the findings?</p>
+            <p><strong>This tool assesses five key domains:</strong></p>
+            <ul style="margin-bottom: 12px;">
+                <li><strong>Scientific rationale:</strong> Is the question important and well-formulated?</li>
+                <li><strong>Scientific validity of methods:</strong> Do the methods actually test what they claim to test?</li>
+                <li><strong>Methodological rigour:</strong> Were appropriate controls, replication, and statistics used?</li>
+                <li><strong>Data quality:</strong> Are results believable and well-presented?</li>
+                <li><strong>Interpretation:</strong> Are conclusions justified by the data?</li>
+            </ul>
+            <p><strong>This tool does NOT assess:</strong></p>
+            <ul>
+                <li><strong>External validity:</strong> Whether in vitro findings translate to in vivo or clinical contexts</li>
+                <li><strong>Generalizability:</strong> Whether findings apply to other cell types, species, or conditions</li>
+                <li><strong>Applicability:</strong> Whether this study directly addresses your systematic review question</li>
+            </ul>
+            <p style="font-size: 14px;"><em>Note: A study can be methodologically rigorous (high internal validity) but have limited real-world applicability (low external validity). Both dimensions should be considered when synthesizing evidence!</em></p>
+        </div>
+
+        <div class="info-box" style="background: #FFF3E0; border-left: 4px solid #FF9800;">
+            <h4 style="color: #E65100;">How to Report Risk of Bias Assessment in Your Thesis</h4>
+            <p><strong>Purpose of This Tool:</strong> This is a risk of bias assessment tool for systematic quality evaluation. It's one component of critical appraisal - you'll still need to apply critical thinking throughout your analysis and synthesis!</p>
+            
+            <p><strong>METHODS Section:</strong></p>
+            <ul style="margin-bottom: 12px;">
+                <li>Describe the tool: "In vitro studies were assessed for risk of bias using a five-domain framework evaluating scientific rationale, methods validity, methodological rigour, data quality, and interpretation"</li>
+                <li>Explain scoring (0=No, 1=Partial, 2=Yes, N/A; maximum 50 points when all criteria apply)</li>
+                <li>State your approach: "Studies scoring <60% were excluded" OR "All studies were included regardless of quality, with risk of bias considered during synthesis"</li>
+                <li>State who conducted assessment and how disagreements were resolved</li>
+            </ul>
+            
+            <p><strong>RESULTS Section - Study Characteristics subsection:</strong></p>
+            <ul style="margin-bottom: 12px;">
+                <li>Include the Domain Scores table in supplementary materials or appendix</li>
+                <li>Brief summary: "Risk of bias assessment identified 18 studies suitable for inclusion (scores 60-95%)" OR "All 22 identified studies were included; quality scores ranged from 45-92%"</li>
+                <li>Optionally note patterns: "Domain 3 (Methodological Rigour) showed the most variability, with only 8 studies achieving scores ≥80%"</li>
+            </ul>
+            
+            <p><strong>RESULTS Section - Evidence synthesis:</strong></p>
+            <ul style="margin-bottom: 12px;">
+                <li>Structure depends on your supervisor's preference and your project:
+                    <ul style="margin-top: 8px;">
+                        <li><strong>Thematic:</strong> Group by mechanism, intervention type, or biological process</li>
+                        <li><strong>Paper-by-paper:</strong> Subsection per study with critical analysis of methods and findings</li>
+                        <li><strong>Outcome-focused:</strong> Organized by research questions or dependent variables</li>
+                        <li><strong>Chronological:</strong> Historical development of knowledge</li>
+                        <li><strong>Hybrid:</strong> Combination approaches</li>
+                    </ul>
+                </li>
+                <li><strong>Critical thinking throughout:</strong> Question claims, evaluate biological plausibility, note contradictions between studies, identify methodological limitations, highlight gaps in evidence</li>
+            </ul>
+            
+            <p><strong>DISCUSSION Section:</strong></p>
+            <ul>
+                <li>Discuss how methodological quality affects confidence in conclusions</li>
+                <li>Address systematic weaknesses: "Widespread lack of proper controls (noted in 14/18 studies) raises concerns about specificity of reported effects"</li>
+                <li>Consider implications: "The predominance of single-cell-line studies limits confidence in generalizability"</li>
+                <li>If you excluded studies, acknowledge potential selection bias</li>
+            </ul>
+            
+            <p style="font-size: 13px; font-style: italic;"><strong>Important distinction:</strong> This tool provides <em>systematic risk of bias assessment</em>. Critical appraisal is broader - it's the analytical thinking you apply when evaluating and synthesizing all evidence. Discuss synthesis approach with your supervisor!</p>
         </div>
     </div>
 
