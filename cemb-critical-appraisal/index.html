@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEBM Critical Appraisal Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --md-sys-color-primary: #1565C0;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #D3E3FD;
+            --md-sys-color-secondary: #5A6069;
+            --md-sys-color-surface: #FEFBFF;
+            --md-sys-color-on-surface: #1B1B1F;
+            --md-sys-color-surface-variant: #E0E2EC;
+            --md-sys-color-outline: #74777F;
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-warning: #FF9800;
+            --md-sys-color-error: #F44336;
+            --md-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --md-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.5;
+            color: var(--md-sys-color-on-surface);
+            background-color: var(--md-sys-color-surface);
+        }
+
+        .header {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            padding: 24px 0;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.87;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--md-elevation-1);
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .add-study-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--md-sys-color-on-surface);
+            font-size: 14px;
+        }
+
+        .input-group input {
+            padding: 12px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            border-width: 2px;
+            padding: 11px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-secondary {
+            background-color: var(--md-sys-color-secondary);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--md-sys-color-success);
+            color: white;
+        }
+
+        .btn-error {
+            background-color: var(--md-sys-color-error);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .evaluation-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--md-elevation-1);
+            margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        .evaluation-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .evaluation-table thead {
+            background: var(--md-sys-color-primary);
+            color: white;
+        }
+
+        .evaluation-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 13px;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .evaluation-table th:first-child {
+            text-align: left;
+            padding-left: 16px;
+        }
+
+        .evaluation-table th:last-child {
+            border-right: none;
+        }
+
+        .evaluation-table td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--md-sys-color-surface-variant);
+            border-right: 1px solid var(--md-sys-color-surface-variant);
+        }
+
+        .evaluation-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            padding-left: 16px;
+        }
+
+        .evaluation-table td:last-child {
+            border-right: none;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .evaluation-table tbody tr:hover {
+            background-color: var(--md-sys-color-surface-variant);
+        }
+
+        .rating-strong {
+            background-color: #C8E6C9;
+            color: #1B5E20;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .rating-moderate {
+            background-color: #FFF9C4;
+            color: #F57F17;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .rating-weak {
+            background-color: #FFCDD2;
+            color: #B71C1C;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            box-shadow: var(--md-elevation-3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--md-sys-color-primary);
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--md-sys-color-on-surface);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .criterion-row {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 8px;
+        }
+
+        .criterion-label {
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .criterion-help {
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+
+        .rating-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .rating-option {
+            flex: 1;
+        }
+
+        .rating-option input[type="radio"] {
+            display: none;
+        }
+
+        .rating-option label {
+            display: block;
+            padding: 12px;
+            border: 2px solid var(--md-sys-color-outline);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .rating-option input[type="radio"]:checked + label {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary);
+            color: white;
+        }
+
+        .rating-option label:hover {
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--md-sys-color-surface-variant);
+        }
+
+        .score-summary {
+            background: var(--md-sys-color-primary-container);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .score-summary-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+        }
+
+        .info-box {
+            background: #E3F2FD;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--md-sys-color-primary);
+        }
+
+        .info-box h4 {
+            margin-bottom: 8px;
+            color: var(--md-sys-color-primary);
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .add-study-form {
+                grid-template-columns: 1fr;
+            }
+
+            .rating-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>CEBM Critical Appraisal Tool</h1>
+            <p>Quick assessment using Centre for Evidence-Based Medicine framework</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <h3 style="margin-bottom: 16px;">Add Study</h3>
+            <div class="add-study-form">
+                <div class="input-group">
+                    <label for="study-citation">Study Citation (Author et al, Year)</label>
+                    <input type="text" id="study-citation" placeholder="e.g., Singh et al, 2019">
+                </div>
+                <div class="input-group">
+                    <label for="study-year">Year</label>
+                    <input type="number" id="study-year" min="1900" max="2100" placeholder="2019">
+                </div>
+                <div class="input-group">
+                    <label for="study-type">Study Type (optional)</label>
+                    <input type="text" id="study-type" placeholder="e.g., RCT, Cohort">
+                </div>
+                <button class="btn btn-primary" onclick="addStudy()" style="align-self: end;">Add Study</button>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="deleteSelected()">Delete Selected</button>
+                <button class="btn btn-success" onclick="saveProject()">Save Project</button>
+                <button class="btn btn-secondary" onclick="loadProject()">Load Project</button>
+                <button class="btn btn-secondary" onclick="exportToCSV()">Export to CSV</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4>Scoring System</h4>
+            <ul>
+                <li><strong>Weak = 1 point:</strong> Significant concerns or limitations</li>
+                <li><strong>Moderate = 2 points:</strong> Some concerns but generally acceptable</li>
+                <li><strong>Strong = 3 points:</strong> Well-designed and executed with minimal concerns</li>
+            </ul>
+            <p style="margin-top: 8px; font-size: 14px;"><strong>Maximum Score:</strong> 21 points (7 criteria × 3 points each)</p>
+        </div>
+
+        <div class="evaluation-table-container">
+            <h3 style="padding: 20px 20px 0 20px; margin: 0;">Paper Evaluation Table</h3>
+            <table class="evaluation-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">
+                            <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                        </th>
+                        <th style="width: 180px;">Study</th>
+                        <th>Study<br>Design</th>
+                        <th>Selection<br>Bias</th>
+                        <th>Data Set<br>Size</th>
+                        <th>Data<br>Collection</th>
+                        <th>Statistical<br>Analysis</th>
+                        <th>Conflict of<br>Interest</th>
+                        <th>Time<br>Framing</th>
+                        <th style="width: 80px;">Score</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="evaluation-tbody">
+                    <tr>
+                        <td colspan="11" class="empty-state">
+                            <h3>No studies added yet</h3>
+                            <p>Add your first study above to begin the appraisal</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Assessment Modal -->
+    <div id="assessmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-study-title">Evaluate Study</h3>
+                <button class="close-btn" onclick="closeAssessmentModal()">&times;</button>
+            </div>
+
+            <div id="assessment-content"></div>
+
+            <div class="score-summary">
+                <div style="font-size: 14px; margin-bottom: 8px;">Total Score</div>
+                <div class="score-summary-value" id="total-score-display">0 / 21</div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAssessmentModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAssessment()">Save Assessment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studies = [];
+        let currentStudyId = null;
+        let studyIdCounter = 1;
+
+        const criteria = [
+            {
+                id: 'study_design',
+                label: 'Study Design',
+                description: 'Planning and execution of the study'
+            },
+            {
+                id: 'selection_bias',
+                label: 'Selection Bias',
+                description: 'Bias regarding selection of participants'
+            },
+            {
+                id: 'data_size',
+                label: 'Data Set Size',
+                description: 'Number of participants'
+            },
+            {
+                id: 'data_collection',
+                label: 'Data Collection',
+                description: 'Methods of collection'
+            },
+            {
+                id: 'statistical_analysis',
+                label: 'Statistical Analysis',
+                description: 'Reliability and complexity of mathematical tests employed'
+            },
+            {
+                id: 'conflict_of_interest',
+                label: 'Conflict of Interest',
+                description: 'Authorship bias'
+            },
+            {
+                id: 'time_framing',
+                label: 'Time Framing',
+                description: 'Reliability based on length of time study was conducted over'
+            }
+        ];
+
+        function addStudy() {
+            const citation = document.getElementById('study-citation').value.trim();
+            const year = document.getElementById('study-year').value.trim();
+            const type = document.getElementById('study-type').value.trim();
+
+            if (!citation) {
+                alert('Please enter a study citation');
+                return;
+            }
+
+            const study = {
+                id: studyIdCounter++,
+                citation,
+                year,
+                type,
+                assessment: null,
+                assessed: false
+            };
+
+            studies.push(study);
+
+            document.getElementById('study-citation').value = '';
+            document.getElementById('study-year').value = '';
+            document.getElementById('study-type').value = '';
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('evaluation-tbody');
+            
+            if (studies.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="empty-state">
+                            <h3>No studies added yet</h3>
+                            <p>Add your first study above to begin the appraisal</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = studies.map(study => {
+                const assessmentCells = criteria.map(criterion => {
+                    if (!study.assessed) {
+                        return '<td>—</td>';
+                    }
+                    const rating = study.assessment[criterion.id];
+                    return `<td><span class="rating-${rating.toLowerCase()}">${rating}</span></td>`;
+                }).join('');
+
+                const totalScore = study.assessed ? calculateTotalScore(study) : '—';
+
+                return `
+                    <tr>
+                        <td><input type="checkbox" class="study-checkbox" data-study-id="${study.id}"></td>
+                        <td><strong>${study.citation}</strong></td>
+                        ${assessmentCells}
+                        <td>${totalScore}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openAssessment(${study.id})">
+                                ${study.assessed ? 'Edit' : 'Assess'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateTotalScore(study) {
+            if (!study.assessed) return 0;
+            let total = 0;
+            criteria.forEach(criterion => {
+                const rating = study.assessment[criterion.id];
+                if (rating === 'Strong') total += 3;
+                else if (rating === 'Moderate') total += 2;
+                else if (rating === 'Weak') total += 1;
+            });
+            return total;
+        }
+
+        function openAssessment(studyId) {
+            currentStudyId = studyId;
+            const study = studies.find(s => s.id === studyId);
+            
+            document.getElementById('modal-study-title').textContent = `Evaluate: ${study.citation}`;
+
+            renderAssessmentForm(study);
+            document.getElementById('assessmentModal').style.display = 'block';
+            updateScoreSummary();
+        }
+
+        function renderAssessmentForm(study) {
+            const content = document.getElementById('assessment-content');
+            let html = '';
+
+            criteria.forEach(criterion => {
+                const savedValue = study.assessment?.[criterion.id] || '';
+                html += `
+                    <div class="criterion-row">
+                        <div class="criterion-label">${criterion.label}</div>
+                        <div class="criterion-help">${criterion.description}</div>
+                        <div class="rating-options">
+                            <div class="rating-option">
+                                <input type="radio" id="${criterion.id}-strong" name="${criterion.id}" value="Strong"
+                                    ${savedValue === 'Strong' ? 'checked' : ''} onchange="updateScoreSummary()">
+                                <label for="${criterion.id}-strong">Strong<br>(3 points)</label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="${criterion.id}-moderate" name="${criterion.id}" value="Moderate"
+                                    ${savedValue === 'Moderate' ? 'checked' : ''} onchange="updateScoreSummary()">
+                                <label for="${criterion.id}-moderate">Moderate<br>(2 points)</label>
+                            </div>
+                            <div class="rating-option">
+                                <input type="radio" id="${criterion.id}-weak" name="${criterion.id}" value="Weak"
+                                    ${savedValue === 'Weak' ? 'checked' : ''} onchange="updateScoreSummary()">
+                                <label for="${criterion.id}-weak">Weak<br>(1 point)</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+        }
+
+        function updateScoreSummary() {
+            let total = 0;
+            criteria.forEach(criterion => {
+                const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                if (selected) {
+                    if (selected.value === 'Strong') total += 3;
+                    else if (selected.value === 'Moderate') total += 2;
+                    else if (selected.value === 'Weak') total += 1;
+                }
+            });
+            document.getElementById('total-score-display').textContent = `${total} / 21`;
+        }
+
+        function saveAssessment() {
+            const study = studies.find(s => s.id === currentStudyId);
+            if (!study) return;
+
+            const assessment = {};
+            let hasAllRatings = true;
+
+            criteria.forEach(criterion => {
+                const selected = document.querySelector(`input[name="${criterion.id}"]:checked`);
+                if (selected) {
+                    assessment[criterion.id] = selected.value;
+                } else {
+                    hasAllRatings = false;
+                }
+            });
+
+            if (!hasAllRatings) {
+                alert('Please rate all criteria before saving.');
+                return;
+            }
+
+            study.assessment = assessment;
+            study.assessed = true;
+
+            closeAssessmentModal();
+            renderTable();
+        }
+
+        function closeAssessmentModal() {
+            document.getElementById('assessmentModal').style.display = 'none';
+            currentStudyId = null;
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.study-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        }
+
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.study-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one study to delete');
+                return;
+            }
+
+            if (!confirm(`Delete ${checkboxes.length} selected study/studies?`)) {
+                return;
+            }
+
+            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.studyId));
+            studies = studies.filter(s => !idsToDelete.includes(s.id));
+            
+            document.getElementById('select-all').checked = false;
+            renderTable();
+        }
+
+        function saveProject() {
+            if (studies.length === 0) {
+                alert('No studies to save');
+                return;
+            }
+
+            const projectData = {
+                studies: studies,
+                exported: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const dataStr = JSON.stringify(projectData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `cebm-appraisal-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('Project saved successfully!');
+        }
+
+        function loadProject() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const projectData = JSON.parse(e.target.result);
+                        studies = projectData.studies || [];
+                        studyIdCounter = studies.length > 0 ? Math.max(...studies.map(s => s.id)) + 1 : 1;
+                        renderTable();
+                        alert('Project loaded successfully!');
+                    } catch (error) {
+                        alert('Error loading project file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function exportToCSV() {
+            if (studies.length === 0) {
+                alert('No studies to export');
+                return;
+            }
+
+            let csv = 'Study,Year,Type,Study Design,Selection Bias,Data Set Size,Data Collection,Statistical Analysis,Conflict of Interest,Time Framing,Total Score\n';
+
+            studies.forEach(study => {
+                const row = [
+                    study.citation,
+                    study.year || '',
+                    study.type || '',
+                    study.assessed ? study.assessment.study_design : 'Not assessed',
+                    study.assessed ? study.assessment.selection_bias : 'Not assessed',
+                    study.assessed ? study.assessment.data_size : 'Not assessed',
+                    study.assessed ? study.assessment.data_collection : 'Not assessed',
+                    study.assessed ? study.assessment.statistical_analysis : 'Not assessed',
+                    study.assessed ? study.assessment.conflict_of_interest : 'Not assessed',
+                    study.assessed ? study.assessment.time_framing : 'Not assessed',
+                    study.assessed ? calculateTotalScore(study) : '0'
+                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+                csv += row + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `cebm-appraisal-export-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('CSV file downloaded successfully!');
+        }
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('assessmentModal');
+            if (event.target === modal) {
+                closeAssessmentModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+        });
+    </script>
+</body>
+</html>
