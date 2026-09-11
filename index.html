@@ -195,6 +195,37 @@
             color: var(--md-sys-color-on-surface-variant);
         }
 
+        /* Project type labels in the preferences list */
+        .type-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+        .type-tag.lab { background-color: #F3E5F5; color: #7B1FA2; }
+        .type-tag.data { background-color: #E8F4FD; color: #1976D2; }
+        .type-tag.lit { background-color: #E8F5E8; color: #2E7D32; }
+        .type-tag.ind { background-color: #FFF3E0; color: #E65100; }
+
+        /* Lab project counter shown above the panel buttons */
+        .lab-meter {
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .lab-meter.over { color: #B3261E; font-weight: 600; }
+        .panel-button.primary.not-ready { opacity: 0.6; }
+        .lab-count { font-weight: 600; white-space: nowrap; }
+        .lab-count.over {
+            background-color: #FDECEA;
+            color: #B3261E;
+            padding: 0 6px;
+            border-radius: 8px;
+        }
+
         .saved-project-actions {
             float: right;
             display: flex;
@@ -960,8 +991,9 @@
                     </div>
                 </div>
                 <div class="saved-panel-actions">
+                    <div class="lab-meter" id="labMeter" aria-live="polite"></div>
                     <button class="panel-button secondary" onclick="openReorderModal()">Reorder in full view</button>
-                    <button class="panel-button primary" onclick="exportProjectList()">Submit via Microsoft Forms</button>
+                    <button class="panel-button primary" id="submitButton" onclick="exportProjectList()">Submit via Microsoft Forms</button>
                     <button class="panel-button secondary" onclick="copyProjectList()">Copy to Clipboard</button>
                     <button class="panel-button danger" onclick="clearAllSaved()">Clear All</button>
                 </div>
@@ -976,13 +1008,13 @@
             <div class="reorder-modal-header">
                 <div>
                     <div class="reorder-modal-title" id="reorderModalTitle">Reorder your preferences</div>
-                    <div class="reorder-modal-sub">Drag a row, or use the arrows &bull; <span id="reorderCount">0</span>/30 selected</div>
+                    <div class="reorder-modal-sub">Drag a row, or use the arrows &bull; <span id="reorderCount">0</span>/30 selected &bull; <span class="lab-count" id="labCountModal">0/15 lab</span></div>
                 </div>
                 <button class="reorder-modal-close" onclick="closeReorderModal()" aria-label="Close reorder view">&times;</button>
             </div>
             <div class="reorder-list" id="reorderList"></div>
             <div class="reorder-modal-footer">
-                <button class="panel-button primary" style="width:auto;padding:10px 28px;margin:0;" onclick="closeReorderModal()">Done</button>
+                <button class="panel-button primary" style="width:auto;padding:10px 28px;margin:0;align-self:center;flex-shrink:0;" onclick="closeReorderModal()">Done</button>
             </div>
         </div>
     </div>
@@ -995,6 +1027,74 @@
         // Microsoft Form pre-filled link (from build.py); the student's ranked
         // list is URL-encoded and appended to fill the Project Preferences field.
         const FORM_PREFILL_URL = 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=YwceYzMV60elzQRXvuWUTmPPKx3b0LdJhrokAq372hxUMFBPRVIzS1VWWkVKTTA0UDlCQ0cyRjdHUy4u&rdf8d8d355d22492392b98042af158482=';
+
+        // ---- Submission rules ----
+        // Students must rank exactly REQUIRED_COUNT projects, and no more than
+        // MAX_LAB of them can be laboratory projects (the oversubscribed type).
+        // The tool will not open the form until the list meets these rules.
+        const REQUIRED_COUNT = 30;
+        const MAX_LAB = 15;   // i.e. no more than half
+
+        // Broad project type used for the mix rule (sub-types are grouped).
+        const TYPE_GROUPS = [
+            { key: 'lab',  label: 'Laboratory',          match: 'Experimental' },
+            { key: 'data', label: 'Data Science',        match: 'Data Science' },
+            { key: 'lit',  label: 'Literature-based',    match: 'Literature' },
+            { key: 'ind',  label: 'Industrial/Societal', match: 'Industrial' }
+        ];
+        function typeGroup(project) {
+            const t = (project && project.type) || '';
+            return TYPE_GROUPS.find(g => t.includes(g.match)) ||
+                   { key: 'other', label: t || 'Other', match: '' };
+        }
+
+        // Count how many of each type are in the current list.
+        function typeCounts() {
+            const counts = {};
+            savedProjects.forEach(id => {
+                const g = typeGroup(projects.find(p => p.id === id));
+                counts[g.label] = (counts[g.label] || 0) + 1;
+            });
+            return counts;
+        }
+
+        // Returns the list of problems that stop submission (empty = ready).
+        function checkPreferences() {
+            const problems = [];
+            const n = savedProjects.length;
+            if (n < REQUIRED_COUNT) {
+                problems.push(`Add ${REQUIRED_COUNT - n} more project${REQUIRED_COUNT - n === 1 ? '' : 's'}. You must rank exactly ${REQUIRED_COUNT}.`);
+            } else if (n > REQUIRED_COUNT) {
+                problems.push(`Remove ${n - REQUIRED_COUNT} project${n - REQUIRED_COUNT === 1 ? '' : 's'}. You must rank exactly ${REQUIRED_COUNT}.`);
+            }
+            const lab = typeCounts()['Laboratory'] || 0;
+            if (lab > MAX_LAB) {
+                problems.push(`You have ${lab} Laboratory projects (maximum ${MAX_LAB}). Replace ${lab - MAX_LAB} with other project types.`);
+            }
+            return problems;
+        }
+
+        // Update the lab counter (panel + pop-out) and the Submit button state.
+        function renderPrefCheck() {
+            const ready = checkPreferences().length === 0;
+            const lab = typeCounts()['Laboratory'] || 0;
+            const over = lab > MAX_LAB;
+
+            const meter = document.getElementById('labMeter');
+            if (meter) {
+                meter.textContent = over
+                    ? `Lab projects: ${lab} of ${MAX_LAB} max. Remove ${lab - MAX_LAB}.`
+                    : `Lab projects: ${lab} of ${MAX_LAB} max`;
+                meter.classList.toggle('over', over);
+            }
+            const modalCount = document.getElementById('labCountModal');
+            if (modalCount) {
+                modalCount.textContent = `${lab}/${MAX_LAB} lab`;
+                modalCount.classList.toggle('over', over);
+            }
+            const btn = document.getElementById('submitButton');
+            if (btn) btn.classList.toggle('not-ready', !ready);
+        }
 
         // Escape any value before putting it into the page, so a project title
         // or aim containing < > & " ' can never break a card or inject markup.
@@ -1245,6 +1345,7 @@
         function renderReorderModal() {
             const list = document.getElementById('reorderList');
             document.getElementById('reorderCount').textContent = savedProjects.length;
+            renderPrefCheck();
             if (savedProjects.length === 0) {
                 list.innerHTML = `<div class="reorder-empty">No projects saved yet. Add some with the + button, then come back here to rank them.</div>`;
                 return;
@@ -1327,6 +1428,7 @@
                     if (!project) return '';
                     const isFirst = index === 0;
                     const isLast = index === savedProjects.length - 1;
+                    const group = typeGroup(project);
                     return `
                     <div class="saved-project-item" draggable="true" data-index="${index}"
                          ondragstart="event.dataTransfer.setData('text/plain', ${index})"
@@ -1340,9 +1442,12 @@
                         <div class="saved-project-rank">${index + 1}</div>
                         <div class="saved-project-title">${esc(project.title)}</div>
                         <div class="saved-project-meta">ID: ${esc(project.id)}${project.primarySupervisor ? ' • ' + esc(project.primarySupervisor) : ''}</div>
+                        <span class="type-tag ${group.key}">${esc(group.label)}</span>
                     </div>`;
                 }).join('');
             }
+
+            renderPrefCheck();
 
             // keep the pop-out reorder view in sync if it is open
             const overlay = document.getElementById('reorderOverlay');
@@ -1355,11 +1460,10 @@
                 return;
             }
             
-            if (savedProjects.length < 30) {
-                const confirmed = confirm(`You have only selected ${savedProjects.length} projects. Students are expected to rank 30 projects for the best chance of assignment.\n\nDo you want to continue anyway?`);
-                if (!confirmed) {
-                    return;
-                }
+            const problems = checkPreferences();
+            if (problems.length > 0) {
+                alert(`Your list is not ready to submit yet.\n\nYou must rank exactly ${REQUIRED_COUNT} projects, and no more than half (${MAX_LAB}) can be Laboratory projects.\n\n- ` + problems.join('\n- '));
+                return;
             }
             
             // Number each line so students can check the order/count in the form.
